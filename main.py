@@ -10,11 +10,21 @@ class KalmanFilter(object):
         self.n = F.shape[1]
         self.m = H.shape[1]
 
+        # state-transition model
         self.F = F
+
+        # observation model
         self.H = H
-        self.B = 0 if B is None else B
+
+        # covariance of process noise
         self.Q = np.eye(self.n) if Q is None else Q
+
+        # covariance of observation noise
         self.R = np.eye(self.n) if R is None else R
+
+        # control-input model
+        self.B = 0 if B is None else B
+
         self.P = np.eye(self.n) if P is None else P
         self.x = np.zeros((self.n, 1)) if x0 is None else x0
 
@@ -33,22 +43,28 @@ class KalmanFilter(object):
         	(I - np.dot(K, self.H)).T) + np.dot(np.dot(K, self.R), K.T)
 
 def example():
+
+    # initialize time variables
 	dt = 1.0/60
 	F = np.array([[1, dt, 0], [0, 1, dt], [0, 0, 1]])
 	H = np.array([1, 0, 0]).reshape(1, 3)
 	Q = np.array([[0.05, 0.05, 0.0], [0.05, 0.05, 0.0], [0.0, 0.0, 0.0]])
 	R = np.array([0.5]).reshape(1, 1)
 
+    # choose measurement equation
 	x = np.linspace(-10, 10, 100)
 	measurements = - (x**2 + 2*x - 2)  + np.random.normal(0, 2, 100)
 
+    # initialize class object
 	kf = KalmanFilter(F = F, H = H, Q = Q, R = R)
 	predictions = []
 
+    # run filter
 	for z in measurements:
 		predictions.append(np.dot(H,  kf.predict())[0])
 		kf.update(z)
 
+    # plot measurements against predictions
 	plt.plot(range(len(measurements)), measurements, label = 'Measurements')
 	plt.plot(range(len(predictions)), np.array(predictions), label = 'Kalman Filter Prediction')
 	plt.legend()
