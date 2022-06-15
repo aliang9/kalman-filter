@@ -25,7 +25,10 @@ class KalmanFilter(object):
         # control-input model
         self.B = 0 if B is None else B
 
+        # confidence measure
         self.P = np.eye(self.n) if P is None else P
+
+        # current state
         self.x = np.zeros((self.n, 1)) if x0 is None else x0
 
     def predict(self, u = 0):
@@ -39,21 +42,20 @@ class KalmanFilter(object):
         K = np.dot(np.dot(self.P, self.H.T), np.linalg.inv(S))
         self.x = self.x + np.dot(K, y)
         I = np.eye(self.n)
-        self.P = np.dot(np.dot(I - np.dot(K, self.H), self.P),
-        	(I - np.dot(K, self.H)).T) + np.dot(np.dot(K, self.R), K.T)
+        self.P = np.dot(np.dot(I - np.dot(K, self.H), self.P), (I - np.dot(K, self.H)).T) + np.dot(np.dot(K, self.R), K.T)
 
 def example():
 
-    # initialize time variables
+    # initialize time step and state matrices
 	dt = 1.0/60
 	F = np.array([[1, dt, 0], [0, 1, dt], [0, 0, 1]])
 	H = np.array([1, 0, 0]).reshape(1, 3)
 	Q = np.array([[0.05, 0.05, 0.0], [0.05, 0.05, 0.0], [0.0, 0.0, 0.0]])
 	R = np.array([0.5]).reshape(1, 1)
 
-    # choose measurement equation
+    # choose measurement equation and add variance
 	x = np.linspace(-10, 10, 100)
-	measurements = - (x**2 + 2*x - 2)  + np.random.normal(0, 2, 100)
+	measurements = - (x**3 + 2*x - 2)  + np.random.normal(0, 2, 100)
 
     # initialize class object
 	kf = KalmanFilter(F = F, H = H, Q = Q, R = R)
